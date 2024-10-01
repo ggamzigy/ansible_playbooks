@@ -1,0 +1,17 @@
+---
+- name: cisco_ios_uptime
+  hosts: IOS
+    #  connection: ansible.netcommon.network_cli
+  gather_facts: no
+  tasks:
+
+    - name: Input Check CLI
+      cisco.ios.ios_command:
+        commands:
+          - "show version | in uptime"
+      register: output_uptime
+
+    - name: print uptime
+      debug:
+        var: output_uptime
+~                                
