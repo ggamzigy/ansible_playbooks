@@ -1,0 +1,312 @@
+---
+- name: eknow_lab_test
+  hosts: juniper
+  gather_facts: no
+  tasks:
+    - name: Input Check CLI
+      juniper.device.command:
+        commands:
+          - "show configuration system" #0
+          - "show configuration system tacplus-server" #1
+          - "show configuration system authentication-order" #2
+          - "show configuration system services" #3
+          - "show configuration system accounting" #4
+          - "show configuration system syslog |  display set" #5
+          - "show configuration system syslog file messages | display set" #6
+          - "show configuration system syslog file interactive-commands | display set" #7
+          - "show configuration system syslog file default-log-messages | display set" #8
+          - "show configuration system ntp | display set" #9
+          - "show configuration chassis | display set" #10
+          - "show configuration interfaces ae0 | display set" #11
+          - "show configuration interfaces irb | display set" #12     
+          - "show configuration interfaces lo0 | display set" #13  
+          - "show configuration interfaces me0 | display set" #14
+          - "show configuration snmp | display set" #15
+          - "show configuration forwarding-options | display set" #16
+          - "show configuration firewall | display set" #17
+          - "show configuration protocols | display set" #18
+          - "show configuration virtual-chassis | display set" #19
+          - "show configuration vlans | display set" #20
+          - "show configuration routing-options | display set" #21
+          - "show configuration policy-options" #22
+        timeout: 120
+      ignore_errors: True
+      register: rslt
+    - name: commit sync
+      debug: msg="{% if 'synchronize' in rslt.results[0].stdout%}OK{% else %}Not OK{% endif %}"
+    - name: OOB_instance
+      debug: msg="{% if 'management-instance' in rslt.results[0].stdout %}OK{% else %}Not OK{% endif %}"
+    - name: console log enable
+      debug: msg="{% if 'log-out-on-disconnect' in rslt.results[0].stdout %}OK{% else %}Not OK{% endif %}"
+    - name: arp aging time
+      debug: msg="{% if 'aging-timer 5' in rslt.results[0].stdout %}OK{% else %}Not OK{% endif %}"
+    - name: time zone
+      debug: msg="{% if 'Asia/Seoul' in rslt.results[0].stdout %}OK{% else %}Not OK{% endif %}"
+    - name: authentication order
+      debug: 
+        msg: >-
+          {% if 'password' not in rslt.results[2].stdout and 
+          'tacplus' in rslt.results[2].stdout %}OK
+          {% else %}Not OK{% endif %}
+    - name: auto snapshot
+      debug: msg="{% if 'auto-snapshot' in rslt.results[0].stdout %}OK{% else %}Not OK{% endif %}"
+    - name: TACACS IP
+      debug: 
+        msg: >-
+          {% if '90.164.6.21' in rslt.results[1].stdout and 
+          '90.164.6.22' in rslt.results[1].stdout %}OK
+          {% else %}Not OK{% endif %}
+    - name: Service ssh
+      debug: 
+        msg: >-
+          {% if 'connection 64' in rslt.results[3].stdout and 
+          'connection-limit 5' in rslt.results[3].stdout and 
+          'rate-limit 5' in rslt.results[3].stdout and 
+          'netconf' in rslt.results[3].stdout %}OK
+          {% else %}Not OK{% endif %}
+    - name: accounting event
+      debug: 
+        msg: >-
+          {% if 'login' in rslt.results[4].stdout and 
+          'change-log' in rslt.results[4].stdout and 
+          'interactive-commands' in rslt.results[4].stdout %}OK
+          {% else %}Not OK{% endif %}
+    - name: accounting destination server
+      debug: 
+        msg: >-
+          {% if '90.164.6.21' in rslt.results[4].stdout and 
+          '90.164.6.22' in rslt.results[4].stdout %}OK
+          {% else %}Not OK{% endif %}
+    - name: SYSLOG_emergency messages to all user
+      debug: msg="{% if 'user * any emergency' in rslt.results[5].stdout %}OK{% else %}Not OK{% endif %}"
+    - name: SYSLOG_remote server IP
+      debug: 
+        msg: >-
+          {% if '90.73.254.200' in rslt.results[5].stdout and 
+          '150.44.112.116' in rslt.results[5].stdout %}OK
+          {% else %}Not OK{% endif %}
+    - name: SYSLOG_file messages
+      debug: 
+        msg: >-
+          {% if 'any notice' in rslt.results[6].stdout and 
+          'authorization' in rslt.results[6].stdout and 
+          'daemon' in rslt.results[6].stdout and 
+          'archive' in rslt.results[6].stdout and 
+          'explicit' in rslt.results[6].stdout%}OK
+          {% else %}Not OK{% endif %}
+    - name: SYSLOG_file interactive command
+      debug: 
+        msg: >-
+          {% if 'authorization info' in rslt.results[7].stdout and 
+          'commands any' in rslt.results[7].stdout and 
+          'explicit' in rslt.results[7].stdout%}OK
+          {% else %}Not OK{% endif %}
+          
+    - name: SYSLOG_file default log messages
+      debug: 
+        msg: >-
+          {% if 'any any' in rslt.results[8].stdout and 
+          'structured-data' in rslt.results[8].stdout %}OK
+          {% else %}Not OK{% endif %}
+    - name: SYSLOG_time format
+      debug: msg="{% if 'time-format millisecond' in rslt.results[0].stdout %}OK{% else %}Not OK{% endif %}"
+    - name: NTP_server IP
+      debug: 
+        msg: >-
+          {% if '150.44.7.177' in rslt.results[9].stdout and 
+          '150.44.7.178' in rslt.results[9].stdout %}OK
+          {% else %}Not OK{% endif %}
+    - name: CHASSIS_default config
+      debug: 
+        msg: >-
+          {% if 'graceful' in rslt.results[10].stdout and 
+          'halt' in rslt.results[10].stdout and 
+          'device-count 1' in rslt.results[10].stdout and 
+          'ignore' in rslt.results[10].stdout %}OK
+          {% else %}Not OK{% endif %}
+    - name: INTERFACE_interlink
+      debug: 
+        msg: >-
+          {% if 'link-speed 10g' in rslt.results[11].stdout and 
+          'lacp active' in rslt.results[11].stdout and 
+          'trunk' in rslt.results[11].stdout and 
+          '101-103' in rslt.results[11].stdout %}OK
+          {% else %}Not OK{% endif %}
+    - name: INTERFACE_irb interface
+      debug: 
+        msg: >-
+          {% if 'priority 250' in rslt.results[12].stdout and 
+          'no-preempt' in rslt.results[12].stdout and 
+          'accept-data' in rslt.results[12].stdout%}OK
+          {% else %}Not OK{% endif %}
+    - name: INTERFACE_loopback interface
+      debug: 
+        msg: >-
+          {% if 'input Host_Inbound_ACL' in rslt.results[13].stdout and 
+          '/32' in rslt.results[13].stdout %}OK
+          {% else %}Not OK{% endif %}
+    - name: INTERFACE_management interface
+      debug: 
+        msg: >-
+          {% if 'input Host_Inbound_ACL' in rslt.results[14].stdout and 
+          '/24' in rslt.results[14].stdout %}OK
+          {% else %}Not OK{% endif %}
+    - name: SNMP_community and server IP
+      debug: 
+        msg: >-
+          {% if 'Network_R' in rslt.results[15].stdout and
+          'read-only' in rslt.results[15].stdout and
+          '150.44.3.0/24' in rslt.results[15].stdout and 
+          '150.44.19.0/24' in rslt.results[15].stdout and 
+          '90.73.26.0/24' in rslt.results[15].stdout and 
+          '90.73.253.0/24' in rslt.results[15].stdout and 
+          '90.73.254.0/24' in rslt.results[15].stdout and 
+          '0.0.0.0/0 restrict' in rslt.results[15].stdout and 
+          'targets 90.73.254.200' in rslt.results[15].stdout %}OK
+          {% else %}Not OK{% endif %}
+    - name: FROWARDING_storm control
+      debug: 
+        msg: >-
+          {% if 'bandwidth-percentage 5' in rslt.results[16].stdout and
+          'action-shutdown' in rslt.results[16].stdout %}OK
+          {% else %}Not OK{% endif %}
+    - name: FROWARDING_mirroring
+      debug: 
+        msg: >-
+          {% if 'input ingress vlan v101' in rslt.results[16].stdout and
+          'input ingress vlan v102' in rslt.results[16].stdout and
+          'input ingress vlan v103' in rslt.results[16].stdout and          
+          'output interface xe-2/2/2.0' in rslt.results[16].stdout %}OK
+          {% else %}Not OK{% endif %}
+    - name: FROWARDING_dhcp relay
+      debug: 
+        msg: >-
+          {% if '90.161.6.21' in rslt.results[16].stdout and
+          'access-internal' in rslt.results[16].stdout and
+          'irb.103' in rslt.results[16].stdout and          
+          'active-server-group' in rslt.results[16].stdout %}OK
+          {% else %}Not OK{% endif %}
+    - name: FIREWALL_ntp
+      debug: 
+        msg: >-
+          {% if '150.44.7.177/32' in rslt.results[17].stdout and
+          '150.44.7.178/32' in rslt.results[17].stdout and
+          'block-ntp' in rslt.results[17].stdout%}OK
+          {% else %}Not OK{% endif %}
+    - name: FIREWALL_ssh access
+      debug: 
+        msg: >-
+          {% if '150.44.3.81/32' in rslt.results[17].stdout and
+          '150.44.3.82/32' in rslt.results[17].stdout and
+          '90.37.201.21/32' in rslt.results[17].stdout and
+          '90.37.201.22/32' in rslt.results[17].stdout and
+          '90.37.201.23/32' in rslt.results[17].stdout and
+          '90.37.201.24/32' in rslt.results[17].stdout and
+          '90.158.201.21/32' in rslt.results[17].stdout and
+          '90.158.201.22/32' in rslt.results[17].stdout and
+          '90.158.201.23/32' in rslt.results[17].stdout and
+          '90.158.201.24/32' in rslt.results[17].stdout and
+          '90.73.253.40/32' in rslt.results[17].stdout and
+          '90.73.253.41/32' in rslt.results[17].stdout and
+          '90.73.253.42/32' in rslt.results[17].stdout and
+          '90.73.253.43/32' in rslt.results[17].stdout and
+          '90.73.253.44/32' in rslt.results[17].stdout and
+          '90.173.200.19/32' in rslt.results[17].stdout and
+          'block_SSH_access' in rslt.results[17].stdout%}OK
+          {% else %}Not OK{% endif %}
+    - name: FIREWALL_all permit
+      debug: msg="{% if 'default then accept' in rslt.results[17].stdout%}OK{% else %}Not OK{% endif %}"
+    - name: FIREWALL_virus acl
+      debug: 
+        msg: >-
+          {% if '90.237.2.115/32' in rslt.results[17].stdout and
+          '90.237.2.116/32' in rslt.results[17].stdout and
+          '90.230.1.43/32' in rslt.results[17].stdout and
+          '90.230.1.44/32' in rslt.results[17].stdout and
+          'FABDISK from destination-port 445' in rslt.results[17].stdout and
+          '10 from destination-port 135' in rslt.results[17].stdout and
+          '10 from destination-port 445' in rslt.results[17].stdout and
+          '10 then discard' in rslt.results[17].stdout and
+          '10 then count Discard_count' in rslt.results[17].stdout and
+          '90.173.200.19/32' in rslt.results[17].stdout and
+          '20 then accept' in rslt.results[17].stdout%}OK
+          {% else %}Not OK{% endif %}
+    - name: FIREWALL_virus acl temp
+      debug: 
+        msg: >-
+          {% if 'term 5 from ether-type arp' in rslt.results[17].stdout and
+          'term 5 then accept' in rslt.results[17].stdout and
+          'term 10 from ip-protocol icmp' in rslt.results[17].stdout and
+          'term 10 then accept' in rslt.results[17].stdout and
+          '200.179.19.221/32' in rslt.results[17].stdout and
+          '200.179.19.222/32' in rslt.results[17].stdout and
+          '200.179.19.224/32' in rslt.results[17].stdout and
+          '150.44.38.100/32' in rslt.results[17].stdout and
+          '150.44.38.102/32' in rslt.results[17].stdout and
+          '150.44.38.103/32' in rslt.results[17].stdout and
+          '150.44.38.104/32' in rslt.results[17].stdout and
+          '150.44.38.105/32' in rslt.results[17].stdout and
+          '150.44.38.106/32' in rslt.results[17].stdout and
+          '90.158.150.0/24' in rslt.results[17].stdout and
+          '90.192.71.39/32' in rslt.results[17].stdout and
+          '90.192.71.40/32' in rslt.results[17].stdout and
+          '90.192.9.42/32' in rslt.results[17].stdout and
+          '20 then accept' in rslt.results[17].stdout and
+          '30 then discard' in rslt.results[17].stdout%}OK
+          {% else %}Not OK{% endif %}
+    - name: PROTOCOLS_ospf
+      debug: 
+        msg: >-
+          {% if 'lo0.0 passive' in rslt.results[18].stdout and
+          'xe-1/2/0.0 interface-type p2p' in rslt.results[18].stdout and
+          'xe-3/2/0.0 interface-type p2p' in rslt.results[18].stdout and
+          'irb.101 passive' in rslt.results[18].stdout and
+          'irb.102 passive' in rslt.results[18].stdout and
+          'irb.103 passive' in rslt.results[18].stdout and
+          'xe-1/2/1.0 interface-type p2p' in rslt.results[18].stdout and
+          'xe-1/2/1.0 metric 65535' in rslt.results[18].stdout and
+          'reference-bandwidth 100g' in rslt.results[18].stdout %}OK
+          {% else %}Not OK{% endif %}
+    - name: FROWARDING_lldp
+      debug: 
+        msg: >-
+          {% if 'management-address' in rslt.results[18].stdout and
+          'lldp interface all' in rslt.results[18].stdout %}OK
+          {% else %}Not OK{% endif %}
+    - name: FROWARDING_igmp snooping
+      debug: msg="{% if 'igmp-snooping vlan all' in rslt.results[18].stdout %}OK{% else %}Not OK{% endif %}"
+    - name: FROWARDING_layer2 contorol
+      debug: msg="{% if 'nonstop-bridging' in rslt.results[18].stdout %}OK{% else %}Not OK{% endif %}"
+    - name: FROWARDING_stp
+      debug: 
+        msg: >-
+          {% if 'bpdu-block-on-edge' in rslt.results[18].stdout and
+          'Host1 edge' in rslt.results[18].stdout %}OK
+          {% else %}Not OK{% endif %}
+    - name: VIRTUAL_CHASSIS_vc config
+      debug: 
+        msg: >-
+          {% if 'preprovisioned' in rslt.results[19].stdout and
+          'member 0 role routing-engine' in rslt.results[19].stdout and
+          'member 2 role routing-engine' in rslt.results[19].stdout and
+          'mac-persistence-timer disable' in rslt.results[19].stdout %}OK
+          {% else %}Not OK{% endif %}
+    - name: VLANS_vlan config
+      debug: 
+        msg: >-
+          {% if 'v101 vlan-id 101' in rslt.results[20].stdout and
+          'v101 l3-interface irb.101' in rslt.results[20].stdout and
+          'v102 vlan-id 102' in rslt.results[20].stdout and
+          'v102 l3-interface irb.102' in rslt.results[20].stdout and
+          'v103 vlan-id 103' in rslt.results[20].stdout and
+          'v103 l3-interface irb.103' in rslt.results[20].stdout %}OK
+          {% else %}Not OK{% endif %}
+    - name: ROUTING_OPTIONS_ecmp and nsr
+      debug: 
+        msg: >-
+          {% if 'router-id' in rslt.results[21].stdout and
+          'nonstop-routing' in rslt.results[21].stdout and
+          'export ecmp' in rslt.results[21].stdout and
+          'ecmp' in rslt.results[22].stdout and
+          'load-balance per-packet' in rslt.results[22].stdout %}OK
+          {% else %}Not OK{% endif %}
