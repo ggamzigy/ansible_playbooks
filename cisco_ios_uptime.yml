@@ -10,8 +10,7 @@
         commands:
           - "show version | in uptime"
       register: output_uptime
-
+      
     - name: print uptime
       debug:
         var: output_uptime
-~                                
