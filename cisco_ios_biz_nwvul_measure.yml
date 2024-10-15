@@ -143,8 +143,8 @@
 # banner motd
     - name: Input config CLI
       cisco.ios.ios_banner:
-          banner: motd
-          text: |
+        banner: motd
+        text: |
           ---------------------------------------------------------------------
                                       W A R N I N G
           ---------------------------------------------------------------------
@@ -155,3 +155,9 @@
           ---------------------------------------------------------------------
         state: present
 
+
+# saving config
+    - name: write memory
+      cisco.ios.ios_command:
+        commands:
+          - "write memory"
