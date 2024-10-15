@@ -12,7 +12,7 @@
         # line console password
         parents: line con 0
         lines:
-          - "login"
+          #- "login"
           - "password Rsupport#4430"
           
 # global config
