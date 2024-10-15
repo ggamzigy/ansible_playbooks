@@ -5,12 +5,153 @@
   gather_facts: no
   tasks:
 
-    - name: Input Check CLI
-      cisco.ios.ios_command:
-        commands:
-          - "show version | in uptime"
-      register: output_uptime
-      
-    - name: print uptime
-      debug:
-        var: output_uptime
+# console password
+    - name: Input line console password
+      cisco.ios.ios_config:
+        
+        # line console password
+        parents: line con 0
+        lines:
+          - "login"
+          - "password Rsupport#4430"
+          
+# global config
+    - name: Input global config
+      cisco.ios.ios_config:
+        lines:
+          # password encryption
+          - "service password-encryption"
+
+          # user exec level
+          - "privilege exec level 15 connect"
+          - "privilege exec level 15 telnet"
+          - "privilege exec level 15 rlogin"
+          - "privilege exec level 15 show ip access-list"
+          - "privilege exec level 15 show logging"
+
+          # logging buffer
+          - "logging buffered 16000 informational"
+
+          # ntp config
+          - "ntp server 2.2.2.2"
+          - "ntp server 1.1.1.1"
+          
+          # timestamp log config
+          - "clock timezone KST 9 0"
+          - "service timestamps log datetime msec localtime show-timezone"
+
+          # no snmp config
+          - "no snmp-server"
+
+          # tcp keepalive config
+          - "service tcp-keepalives-in"
+          - "service tcp-keepalives-out"
+
+          # finger service disable
+          - "no ip finger"
+
+          # web service disable
+          - "no ip http server"
+          - "no ip http secure-server
+          - "no ip http authentication"
+
+          # tcp/udp small service disable
+          - "no service tcp-small-server"
+          - "no service udp-small-server"
+
+          # bootp service disable
+          - "no ip bootp server"
+          - "ip dhcp bootp ignore"
+
+          # cdp off
+          - "no cdp run"
+
+          # source routing disable
+          - "no ip source-route"
+
+          # domain lookup disable
+          - "no ip domain lookup"
+
+          # pad disable
+          - "no service pad"
+
+          # STP bpdu / roop guard enable
+          - "spanning-tree portfast bpduguard default"
+          - "spanning-tree loopguard default"
+
+# IP interface secure config
+    - name: Input interface secure set
+      cisco.ios.ios_config:
+        parents: interface vlan 911
+        lines:
+          # directed-broadcast ignore
+          - "no ip directed-broadcast"
+
+          # proxy-arp ignore
+          - "no ip proxy-arp"
+
+          # icmp unreachable, redirect ignore
+          - "no ip unreachables"
+          - "no ip redirects"
+
+          # mask-reply ignore
+          - "no ip mask-reply"
+          
+# ssh acl config
+    - name: Input ssh acl
+      cisco.ios.ios_config:
+        lines:
+          - "access-list 10 remark ssh_acl"
+          - "access-list 10 permit 10.1.21.0 0.0.0.255 log"
+          - "access-list 10 permit 10.2.21.0 0.0.0.255 log"
+          - "access-list 10 permit 10.3.21.0 0.0.0.255 log"
+          - "access-list 10 permit 10.4.21.0 0.0.0.255 log"
+          - "access-list 10 deny any log"
+
+    - name: Input ssh acl at vty
+      cisco.ios.ios_config:
+        parents: line vty 0 15
+        lines:
+          - "access-class 10 in"
+
+# session timeout
+    - name: Input console session timeout
+      cisco.ios.ios_config:        
+        # line console session timeout
+        parents: line con 0
+        lines:
+          - "exec-timeout 5 0"
+          
+    - name: Input vty session timeout
+      cisco.ios.ios_config:        
+        # line vty session timeout
+        parents: line vty 0 15
+        lines:
+          - "exec-timeout 5 0"
+
+# unuse IO line disable
+    - name: Input aux disable
+      cisco.ios.ios_config:        
+        # line console session timeout
+        parents: line aux 0
+        lines:
+          - "no password"
+          - "transport input none"
+          - "no exec"
+          - "exec-timeout 0 1"
+          
+# banner motd
+    - name: Input config CLI
+      cisco.ios.ios_banner:
+          banner: motd
+          text: |
+          ---------------------------------------------------------------------
+                                      W A R N I N G
+          ---------------------------------------------------------------------
+                              Unauthorized access prohibited
+                                 Authorized access only
+                    This system is the property of Rsupport Co. Ltd.
+                Disconnect IMMEDIATELY if you are not anauthorized user!
+          ---------------------------------------------------------------------
+        state: present
+
